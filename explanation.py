@@ -7,4 +7,4 @@ def display_paper():
         Path("paper.md").read_text(encoding="utf-8"),
         unsafe_allow_html=True
     )
-    print(Path("paper.md").read_text(encoding="utf-8"))
+    
