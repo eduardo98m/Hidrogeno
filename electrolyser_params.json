@@ -1,0 +1,41 @@
+{
+    "alkaline":{
+        "Pressure":30,
+        "efficiency":{
+            "min":0.5,
+            "max":0.78
+        },
+        "lifetime":{
+            "min":60,
+            "max":60
+        },
+        "stack cost":{ 
+            "min":270,
+            "max":270
+        },
+        "full system cost":{
+            "min":500,
+            "max":1000
+        }
+    },
+    "PEM":{
+        "Pressure":70,
+        "efficiency":{
+            "min":0.5,
+            "max":0.83
+        },
+        "lifetime":{
+            "min":50,
+            "max":80
+        },
+        "stack cost":{ 
+            "min":400,
+            "max":400
+        },
+        "full system cost":{
+            "min":700,
+            "max":1400
+        }
+    }
+
+}
