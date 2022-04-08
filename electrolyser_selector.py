@@ -200,7 +200,7 @@ def display_selector():
     col_b.text("ROI {0:.2f}% ".format(ROI))
     col_b.text("Water flow rate: {0:.2f} [m3/s]".format(water_flow_rate))
     col_b.text("Hydrogen flow rate: {0:.2f} [m3/s]".format(hydrogen_flow_rate))
-    col_b.text("Dayly Hydrogen production: {0:.2f} [kg/24h]".format(hydrogen_mass_rate))
+    col_b.text("Daily Hydrogen production: {0:.2f} [kg/24h]".format(hydrogen_mass_rate))
     #st.text("Estimated water flow: {}m3/h".format(params["water flow"]))
 
     st.subheader("")
