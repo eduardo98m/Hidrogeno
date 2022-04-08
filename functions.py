@@ -51,13 +51,14 @@ def electrolyser_params(E_o, elec_type, rate_of_use) -> dict:
                                     params[elec_type]["efficiency"]["max"]
                                     )# [kWh/KgH2]
     # Capital cost of the electrolyser stack
-    CAPEX_o = E_o *np.random.uniform(
+    CAPEX_o = E_o * np.random.uniform(
                                     params[elec_type]["stack cost"]["min"], 
                                     params[elec_type]["stack cost"]["max"]
                                     )# [USD]
     
     # Capital cost of the electrolyser system
-    CAPEX_sys = E_o *np.random.uniform(
+    
+    CAPEX_sys = E_o * np.random.uniform(
                                 params[elec_type]["full system cost"]["min"], 
                                 params[elec_type]["full system cost"]["max"]
                                 ) # [USD]
@@ -65,7 +66,8 @@ def electrolyser_params(E_o, elec_type, rate_of_use) -> dict:
     # As a fraction of the CAPEX based on the operating energy
     # Source (https://www.fch.europa.eu/sites/default/files/FCH%20Docs/171121_FCH2JU_Application-Package_WG5_P2H_Green%20hydrogen%20%28ID%202910583%29%20%28ID%202911641%29.pdf)
     OPEX_frac_fun = interpolate.interp1d(
-    [1000, 5000, 20000], [0.04, 0.03, 0.02], ) 
+                                        [1000, 5000, 20000], 
+                                        [0.04, 0.03, 0.02], ) 
     Opex_frac = OPEX_frac_fun(E_o)
     
     OPEX_o = Opex_frac * CAPEX_o # [USD/year]
@@ -85,12 +87,12 @@ def electrolyser_params(E_o, elec_type, rate_of_use) -> dict:
             "lifetime years": lifetime_years}
 
 
-def cash_flow(t:float, 
-                E_year:float, 
+def cash_flow(  E_year:float, 
                 E_cost:float, 
                 efficiency:float, 
                 OPEX:float, 
-                H2_price:float) -> float:
+                H2_price:float,
+                Water_price) -> float:
     """
     Calculates the cashflow of the electrolyser at the time period t
 
@@ -111,7 +113,7 @@ def cash_flow(t:float,
     Implementation: [TODO]
     """
 
-    yearly_income = E_year * (H2_price/efficiency - E_cost) - OPEX # [USD] 
+    yearly_income = E_year * (H2_price/efficiency - E_cost - 9*Water_price/(997*efficiency)) - OPEX # [USD] 
     
     return yearly_income
 
@@ -124,7 +126,8 @@ def total_return(lifetime_years:int,
                  OPEX:float, 
                  discount_rate:float,
                  E_cost:Callable,
-                 hydrogen_price:Callable
+                 hydrogen_price:Callable,
+                 water_price:Callable
                  )->float:
     """
     Calculates the total return of the electrolyser
@@ -134,22 +137,23 @@ def total_return(lifetime_years:int,
     lifetime_years: int -> Lifetime of the electrolyser in years
     
     """
-    cumulative_return = np.zeros(lifetime_years +1)
-    yearly_return = np.zeros(lifetime_years +1)
-    life_span = np.arange(2022, 2022 + lifetime_years + 1, 1)
+    cumulative_return = np.zeros(lifetime_years +2)
+    yearly_return = np.zeros(lifetime_years +2)
+    life_span = np.arange(2022, 2022 + lifetime_years + 2, 1)
 
     total_income = 0
-    
-    for i, year in enumerate(life_span):
-        E_year = E_o * rate_of_use * 365 * 24 # [kWh]
 
-        yearly_income = cash_flow(year, E_year, E_cost(year), efficiency, OPEX, hydrogen_price(year))/(1+discount_rate)**(i+1)
+    E_year = E_o * rate_of_use * 365 * 24 # [kWh]
+    
+    for i, year in enumerate(life_span[1:]):
+
+        yearly_income = cash_flow(E_year, E_cost(year), efficiency, OPEX, hydrogen_price(year), water_price(year))/(1+discount_rate)**(i+1)
         
         total_income += yearly_income
         
-        yearly_return[i] = yearly_income
+        yearly_return[i+1] = yearly_income
         
-        cumulative_return[i] = total_income
+        cumulative_return[i+1] = total_income
 
     return cumulative_return, yearly_return, life_span
 
@@ -162,7 +166,8 @@ def calculate_profitability(
     rate_of_use:float,
     discount_rate:float,
     E_cost: Callable,
-    hydrogen_price:Callable
+    hydrogen_price:Callable,
+    water_price:Callable
     )-> tuple:
     
     # Step 1: Get the electrolyser parameters
@@ -177,11 +182,58 @@ def calculate_profitability(
                                                 params['OPEX_sys'], 
                                                 discount_rate,
                                                 E_cost,
-                                                hydrogen_price
+                                                hydrogen_price,
+                                                water_price
                                                 )
     
     # Step 3: Calculate other parameters of the elecrolyser
     cumulative_return = cumulative_return - params['CAPEX_sys']
                                                     
-    return cumulative_return, yearly_return, life_span
+    return cumulative_return, yearly_return, life_span, params
 
+def calculate_profitability_V2(
+    efficiency:float,
+    CAPEX_sys:float,
+    lifetime:float,
+    E_o:float,
+    electrolyser_type: str,
+    rate_of_use:float,
+    discount_rate:float,
+    E_cost: Callable,
+    hydrogen_price:Callable,
+    water_price:Callable
+    )-> tuple:
+    """
+    
+    """
+    # Step 1: Get the electrolyser parameters
+    OPEX_frac_fun = interpolate.interp1d(
+                                        [1000, 5000, 20000], 
+                                        [0.04, 0.03, 0.02], ) 
+    Opex_frac = OPEX_frac_fun(E_o)
+
+    OPEX_sys = Opex_frac * CAPEX_sys
+
+    lifetime_hours = lifetime * 1000 # hours
+    
+    # Step 2: Using the rate of use, calculate the lifetime of the electrolyser
+    # in years.
+    lifetime_years = int(np.floor(lifetime_hours /(rate_of_use * 24 *365)))
+
+    # Step 2: Calculate the total return of the electrolyser
+    cumulative_return, yearly_return, life_span = total_return(
+                                                lifetime_years, 
+                                                E_o, 
+                                                rate_of_use,
+                                                efficiency, 
+                                                OPEX_sys, 
+                                                discount_rate,
+                                                E_cost,
+                                                hydrogen_price,
+                                                water_price
+                                                )
+    
+    # Step 3: Calculate other parameters of the elecrolyser
+    cumulative_return = cumulative_return - CAPEX_sys
+                                                    
+    return cumulative_return, yearly_return, life_span
