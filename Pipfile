@@ -9,6 +9,7 @@ numpy = "*"
 matplotlib = "*"
 plotly = "*"
 scipy = "*"
+numpy-financial = "*"
 
 [dev-packages]
 

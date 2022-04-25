@@ -88,6 +88,19 @@ $$
 R_t = P_o \cdot r \cdot 24  \cdot 365  \cdot \left( \frac{1}{\eta_{H_2}} \left( p_{H_2} - \frac{9}{\rho_{H_2O}} \cdot p_{\text{water}}  \right) -  C_{\text{energy}} \right) - \text{OPEX}
 $$
 
+### Efficiency reduction
+
+It is important to take into account the efficiency reduction of the electrolyser thus during each period of operation, its efficiency will be reduced by a certain percentage $\gamma$ given by the user in the pertecentage of efficiency reduction druing ten thousand hours of operation, thus $\gamma$ must be recalculated for each year of operation.
+
+$$
+\gamma_{year} = \gamma  \cdot r \frac{ \cdot 24  \cdot 365 [\text{h}]}{10000 [\text{h}]} \frac{1}{[\text{year}]}
+$$
+
+Thus the efficiency of the electrolyser will be reduced by $\gamma_{year}$ during each year of operation (Note than in the formaula it increases numerically, but rememeber that the efficiecy is given by the energy neeeded to produce one kg of hidrogen, thus the performance is reduced if the efficiency numerically augments).
+
+$$
+\eta_{H_2} = \eta_{H_2} \cdot (1 + \gamma_{year})
+$$
 
 ## Lifetime ($n$)
 
