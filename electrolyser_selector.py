@@ -397,13 +397,13 @@ def display_selector():
 
     #--------------------------------------------------------------------------#
     ROI_mean = ROI_arr.mean()
-    IRR_mean = IRR_arr.mean()*100
+    IRR_mean = np.mean(IRR_arr[~np.isnan(IRR_arr)])*100
     H2_COST_mean = H2_COST_arr.mean()
     lifetime_years_mean = lifetime_years_arr.mean()
     efficiency_mean = efficiency_arr.mean()
     CAPEX_mean = CAPEX_arr.mean()
     
-    total_return = ROI/100 * CAPEX_mean
+    total_return = ROI_mean/100 * CAPEX_mean
     water_flow_rate  = power_output*9/(efficiency_mean * 997) 
     hydrogen_flow_rate = power_output/(efficiency_mean * 0.08375) 
     hydrogen_mass_rate = power_output/efficiency_mean*24*rate_of_use
