@@ -419,8 +419,8 @@ def display_selector():
     col_a.text("Internal Rate of Return : {0:.2f} % ".format(IRR_mean))
     col_a.text("Hydrogen cost: {0:.2f} [USD/kg]".format(H2_COST_mean))
     col_a.text("Lifetime: {} years".format(lifetime_years_mean))
-    col_a.text("Payback Year : {} ".format(RT_arr.mean()))
-    col_a.write("Payback Time :  {:.2f} years ".format(RT_arr.mean() -2022) )
+    col_a.text("Payback Year : {} ".format(np.median(RT_arr)))
+    col_a.write("Payback Time :  {:.2f} years ".format(np.median(RT_arr) -2022) )
 
     
     
